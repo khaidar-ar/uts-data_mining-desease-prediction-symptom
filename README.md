@@ -1,81 +1,209 @@
-# Disease Prediction from Symptoms
 
-This project explores the use of machine learning algorithms to predict diseases from symptoms. 
-
-### Algorithms Explored
-
-The following algorithms have been explored in code:
-
-1. Naive Bayes
-2. Decision Tree
-3. Random Forest
-4. Gradient Boosting
-
-# Dataset
-
-### Source-1
-
-The dataset for this problem used with the `main.py` script is downloaded from here:
-
+# Import dependencies in python
+* pandas untuk library dataframe
+* numpy library untuk pengolahan array
+* seaborn library untuk pengolahan grafik statistik
+* matplotlib library untuk grafik plotting
+```mermaid
+import csv
+import pandas as pd
+import numpy as np
+from collections import defaultdict
+import seaborn as sns
+import matplotlib.pyplot as plt
+%matplotlib inline
+ ```   
+# Memuat dataset menggunakan pandas
+df merupakan variabel untuk memanggil fungsi pandas dengan method `read_excel` untuk membaca file dari local berformal xlsx.
+ ```mermaid
+ df = pd.read_excel('./dataset/raw_data.xlsx')
 ```
-https://www.kaggle.com/kaushil268/disease-prediction-using-machine-learning
+# Menampilkan record awal
+ Memanggil method `head()` untuk menampilkan beberapa record data pertama dari dataset.
+ ```mermaid
+ df.head()
+ ```
+# Mengisi data kosong
+Mengisi data kosong dengan memanggil method `fillna(method='ffill')`
+```mermaid
+data = df.fillna(method='ffill')
 ```
+# Splitting format penamaan record data
 
-This dataset has 133 total columns, 132 of them being symptoms experienced by patiend and last column in prognosis for the same.
-
-### Source-2
-The dataset for this problem used with the Jupyter notebook is downloaded from here: 
+```mermaid
+def process_data(data):
+    data_list = []
+    data_name = data.replace('^','_').split('_')
+    n = 1
+    for names in data_name:
+        if (n % 2 == 0):
+            data_list.append(names)
+        n += 1
+    return data_list
 ```
-https://impact.dbmi.columbia.edu/~friedma/Projects/DiseaseSymptomKB/index.html
+# Data cleaning
+```mermaid
+disease_list = []
+disease_symptom_dict = defaultdict(list)
+disease_symptom_count = {}
+count = 0
+
+for idx, row in data.iterrows():
+    
+    # Get the Disease Names
+    if (row['Disease'] !="\xc2\xa0") and (row['Disease'] != ""):
+        disease = row['Disease']
+        disease_list = process_data(data=disease)
+        count = row['Count of Disease Occurrence']
+
+    # Get the Symptoms Corresponding to Diseases
+    if (row['Symptom'] !="\xc2\xa0") and (row['Symptom'] != ""):
+        symptom = row['Symptom']
+        symptom_list = process_data(data=symptom)
+        for d in disease_list:
+            for s in symptom_list:
+                disease_symptom_dict[d].append(s)
+            disease_symptom_count[d] = count
 ```
-
-This dataset has 3 columns:
+# Invoke Variabel
+Menampilkan data penyakit yang diinisiasi pada variabel `disease_symptom_dict`dengan tipe data dictionary.
+```mermaid
+disease_symptom_dict
 ```
-Disease  | Count of Disease Occurrence | Symptom
+# Print tipe data
+Menampilkan tipe data setiap kolom attribute pada data frame dengan memanggil fungsi `dtypes.`
+```mermaid
+df.dtypes
 ```
+# Label encoding
+Proses pelabelan data pada attribut/kolom target dengan nama `symptom`dengan memanggil package `LabelEncoder` milik library scikitlearn dengan fungsinya `fit_transform`untuk merubah data kategorik menjadi numerik.
+```mermaid
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
 
-You can either copy paste the whole table from here to an excel sheet or scrape it out using Beautifulsoup.
-
-# Directory Structure
-
+label_encoder = LabelEncoder()
+integer_encoded = label_encoder.fit_transform(df['symptom'])
+print(integer_encoded)
 ```
-|_ dataset/
-         |_ training_data.csv
-         |_ test_data.csv
-
-|_ saved_model/
-         |_ [ pre-trained models ]
-
-|_ main.py [ code for laoding kaggle dataset, training & saving the model]
-
-|_ notebook/
-         |_ dataset/
-                  |_ raw_data.xlsx [Columbia dataset for notebook]
-         |_ Disease-Prediction-from-Symptoms-checkpoint.ipynb [ IPython Notebook for loading Columbia dataset, training model and Inference ]
+# One hot encoding
+Merubah data numerik menjadi kategorik dengan memanggil package `OneHotEncoder` milik library *scikitlearn* dengan fungsinya `fit_transform`.
+ ```mermaid
+ onehot_encoder = OneHotEncoder(sparse=False)
+integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
+onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
+print(onehot_encoded)
 ```
-
-# Usage
-
-Please make sure to install all dependencies before running the demo, using the following:
-
+# Cek redundansi data
+Melakukan pengecekan perulangan data yang sama pada kolom dengan memanggil fungsi `unique()` milik library *numpy* pada kolom *symptom*
+```mermaid
+cols = np.asarray(df['symptom'].unique())
+cols
 ```
-pip install -r requirements.txt
+# Transpose baris menjadi nama kolom data frame
+Merubah setiap record data pada attribute `symptom` menjadi nama kolom pada data frame.
+```mermaid
+df_ohe = pd.DataFrame(columns = cols)
+df_ohe.head()
 ```
+# Mapping kolom attribute dengan hasil pelabelan
 
-## Interactive Demo
-
-For running an interactive demo or sharing it with others, please run `demo.py` using Jupyter Notebook or Jupyter Lab.
-
+```mermaid
+for i in range(len(onehot_encoded)):
+    df_ohe.loc[i] = onehot_encoded[i]
 ```
-jupyter notebook demo.ipynb
+# Menggabungkan data frame awal dengan data frame hasil encoding
+``` mermaid
+df_concat = pd.concat([df_disease,df_ohe], axis=1)
+df_concat.head()
 ```
-
-## Standalone Demo
-
-For running the inference on test set or on custom inputs, you can also use the `infr.py` file as follows:
-
+# Menghapus baris data yang sama
+Menghapus duplikasi data berdasarkan kolom pertama `desease.`
+```mermaid
+df_concat.drop_duplicates(keep='first',inplace=True)
 ```
-python infer.py
+# Simpan dataset
+Menyimpan dataframe pada lokal storage dengan format `csv`.
+```mermaid,
+df_concat.to_csv("./dataset/training_dataset.csv", index=False)
 ```
+# Import dependencies model
+* `train_test_split` library untuk splitting dataset pada proses training dan testing
+* `MultinomialNB` library untuk model naive bayes pada data yang bersifat diskrit
+* `tree` library untuk model *decision tree*
+* `DecisionTreeClassifier` library untuk model klasifikasi *decision tree*
+* `export_graphviz` library untuk menampilkan graph dari *decision tree*
+```mermaid
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn import tree
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
+```
+# Splitting dataset
+```mermaid
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=101)
+```
+# Cek jumlah data training
+```mermaid
+len(X_train), len(y_train)
+```
+# Cek jumlah data testing
+```mermaid
+len(X_test), len(y_test)
+```
+# Training model
+Melatih model dengan memanggil package`DecisionTreeClassifier` dengan fungsi `fit()`
+```mermaid
+dt = DecisionTreeClassifier()
+clf_dt=dt.fit(X, y)
+```
+# Akurasi model
+Pengecekan akurasi model dengan memanggil fungsi `score`
+```mermaid
+clf_dt.score(X, y)
+```
+# Menginstall package graphviz
+```mermaid
+!pip  install  graphviz
+```
+# Menyimpan grafik decision tree
+Menampilkan grafik model *decision tree* yang dihasilkan dengan memanggil fungsi `export_graphviz` dan disimpan pada file dengan nama `tree.dot` 
+```mermaid
+export_graphviz(dt, 
+                out_file='./tree.dot', 
+                feature_names=cols)
+```
+# Proses penampilan grafik decision tree
+Menampilkan grafik model *decision tree* dengan package`Source` dan menyimpannya dengan format *png* secara *stream* dengan memanggil fungsi `pipe`
+```mermaid
+from graphviz import Source
+from sklearn import tree
 
-**NOTE:** ***This project is for demo purposes only. For any symptoms/disease, please refer to a Doctor.***
+graph = Source(export_graphviz(dt, 
+                out_file=None, 
+                feature_names=cols))
+
+png_bytes = graph.pipe(format='png')
+
+with open('tree.png','wb') as f:
+    f.write(png_bytes)
+```
+# Menampilkan grafik decision tree pada console
+```mermaid
+from IPython.display import Image
+Image(png_bytes)
+```
+# Prediksi
+Memprediksi dengan model *decision tree* yang dikembangkan dengan memanggil fungsi `predict`
+```mermaid
+disease_pred = clf_dt.predict(X)
+```
+# Inisiasi nilai aktual
+```mermaid
+disease_real = y.values
+```
+# Perbandingan nilai prediksi dan aktual
+```mermaid
+for i in range(0, len(disease_real)):
+    if disease_pred[i]!=disease_real[i]:
+        print ('Pred: {0}\nActual: {1}\n'.format(disease_pred[i], disease_real[i]))
+```
