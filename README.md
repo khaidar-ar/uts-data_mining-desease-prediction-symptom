@@ -15,22 +15,21 @@ import matplotlib.pyplot as plt
  ```   
 # Memuat dataset menggunakan pandas
 df merupakan variabel untuk memanggil fungsi pandas dengan method `read_excel` untuk membaca file dari local berformal xlsx.
- ```mermaid
+ ```
  df = pd.read_excel('./dataset/raw_data.xlsx')
 ```
 # Menampilkan record awal
  Memanggil method `head()` untuk menampilkan beberapa record data pertama dari dataset.
- ```mermaid
+ ```
  df.head()
  ```
 # Mengisi data kosong
 Mengisi data kosong dengan memanggil method `fillna(method='ffill')`
-```mermaid
+```
 data = df.fillna(method='ffill')
 ```
 # Splitting format penamaan record data
-
-```mermaid
+```
 def process_data(data):
     data_list = []
     data_name = data.replace('^','_').split('_')
@@ -42,7 +41,7 @@ def process_data(data):
     return data_list
 ```
 # Data cleaning
-```mermaid
+```
 disease_list = []
 disease_symptom_dict = defaultdict(list)
 disease_symptom_count = {}
@@ -67,17 +66,17 @@ for idx, row in data.iterrows():
 ```
 # Invoke Variabel
 Menampilkan data penyakit yang diinisiasi pada variabel `disease_symptom_dict`dengan tipe data dictionary.
-```mermaid
+```
 disease_symptom_dict
 ```
 # Print tipe data
 Menampilkan tipe data setiap kolom attribute pada data frame dengan memanggil fungsi `dtypes.`
-```mermaid
+```
 df.dtypes
 ```
 # Label encoding
 Proses pelabelan data pada attribut/kolom target dengan nama `symptom`dengan memanggil package `LabelEncoder` milik library scikitlearn dengan fungsinya `fit_transform`untuk merubah data kategorik menjadi numerik.
-```mermaid
+```
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 
@@ -87,7 +86,7 @@ print(integer_encoded)
 ```
 # One hot encoding
 Merubah data numerik menjadi kategorik dengan memanggil package `OneHotEncoder` milik library *scikitlearn* dengan fungsinya `fit_transform`.
- ```mermaid
+ ```
  onehot_encoder = OneHotEncoder(sparse=False)
 integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
 onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
@@ -95,24 +94,23 @@ print(onehot_encoded)
 ```
 # Cek redundansi data
 Melakukan pengecekan perulangan data yang sama pada kolom dengan memanggil fungsi `unique()` milik library *numpy* pada kolom *symptom*
-```mermaid
+```
 cols = np.asarray(df['symptom'].unique())
 cols
 ```
 # Transpose baris menjadi nama kolom data frame
 Merubah setiap record data pada attribute `symptom` menjadi nama kolom pada data frame.
-```mermaid
+```
 df_ohe = pd.DataFrame(columns = cols)
 df_ohe.head()
 ```
 # Mapping kolom attribute dengan hasil pelabelan
-
-```mermaid
+```
 for i in range(len(onehot_encoded)):
     df_ohe.loc[i] = onehot_encoded[i]
 ```
 # Menggabungkan data frame awal dengan data frame hasil encoding
-``` mermaid
+``` 
 df_concat = pd.concat([df_disease,df_ohe], axis=1)
 df_concat.head()
 ```
@@ -123,7 +121,7 @@ df_concat.drop_duplicates(keep='first',inplace=True)
 ```
 # Simpan dataset
 Menyimpan dataframe pada lokal storage dengan format `csv`.
-```mermaid,
+```
 df_concat.to_csv("./dataset/training_dataset.csv", index=False)
 ```
 # Import dependencies model
@@ -132,18 +130,18 @@ df_concat.to_csv("./dataset/training_dataset.csv", index=False)
 * `tree` library untuk model *decision tree*
 * `DecisionTreeClassifier` library untuk model klasifikasi *decision tree*
 * `export_graphviz` library untuk menampilkan graph dari *decision tree*
-```mermaid
+```
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 ```
 # Splitting dataset
-```mermaid
+```
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=101)
 ```
 # Cek jumlah data training
-```mermaid
+```
 len(X_train), len(y_train)
 ```
 # Cek jumlah data testing
@@ -152,29 +150,29 @@ len(X_test), len(y_test)
 ```
 # Training model
 Melatih model dengan memanggil package`DecisionTreeClassifier` dengan fungsi `fit()`
-```mermaid
+```
 dt = DecisionTreeClassifier()
 clf_dt=dt.fit(X, y)
 ```
 # Akurasi model
 Pengecekan akurasi model dengan memanggil fungsi `score`
-```mermaid
+```
 clf_dt.score(X, y)
 ```
 # Menginstall package graphviz
-```mermaid
+```
 !pip  install  graphviz
 ```
 # Menyimpan grafik decision tree
 Menampilkan grafik model *decision tree* yang dihasilkan dengan memanggil fungsi `export_graphviz` dan disimpan pada file dengan nama `tree.dot` 
-```mermaid
+```
 export_graphviz(dt, 
                 out_file='./tree.dot', 
                 feature_names=cols)
 ```
 # Proses penampilan grafik decision tree
 Menampilkan grafik model *decision tree* dengan package`Source` dan menyimpannya dengan format *png* secara *stream* dengan memanggil fungsi `pipe`
-```mermaid
+```
 from graphviz import Source
 from sklearn import tree
 
@@ -188,21 +186,21 @@ with open('tree.png','wb') as f:
     f.write(png_bytes)
 ```
 # Menampilkan grafik decision tree pada console
-```mermaid
+```
 from IPython.display import Image
 Image(png_bytes)
 ```
 # Prediksi
 Memprediksi dengan model *decision tree* yang dikembangkan dengan memanggil fungsi `predict`
-```mermaid
+```
 disease_pred = clf_dt.predict(X)
 ```
 # Inisiasi nilai aktual
-```mermaid
+```
 disease_real = y.values
 ```
 # Perbandingan nilai prediksi dan aktual
-```mermaid
+```
 for i in range(0, len(disease_real)):
     if disease_pred[i]!=disease_real[i]:
         print ('Pred: {0}\nActual: {1}\n'.format(disease_pred[i], disease_real[i]))
