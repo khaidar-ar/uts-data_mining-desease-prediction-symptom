@@ -116,7 +116,7 @@ df_concat.head()
 ```
 # Menghapus baris data yang sama
 Menghapus duplikasi data berdasarkan kolom pertama `desease.`
-```mermaid
+```
 df_concat.drop_duplicates(keep='first',inplace=True)
 ```
 # Simpan dataset
@@ -145,7 +145,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 len(X_train), len(y_train)
 ```
 # Cek jumlah data testing
-```mermaid
+```
 len(X_test), len(y_test)
 ```
 # Training model
