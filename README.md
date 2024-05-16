@@ -4,7 +4,7 @@
 * numpy library untuk pengolahan array
 * seaborn library untuk pengolahan grafik statistik
 * matplotlib library untuk grafik plotting
-```mermaid
+```
 import csv
 import pandas as pd
 import numpy as np
